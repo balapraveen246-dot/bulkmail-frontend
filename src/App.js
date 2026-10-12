@@ -34,23 +34,49 @@ function App() {
   reader.readAsBinaryString(file);
   }
 
-  function send()
-  {
-    setstatus(true)
-    axios.post("https://bulkmail-backend.vercel.app/sendemail",{msg:msg,emailList:emailList})
-    .then(function(data)
-    {
-      if(data.data === true)
-      {
-        alert("Email Sent Successfully")
-        setstatus(false)
-      }
-      else{
-        alert("Failed")
-        setstatus(false)
-      }
-    })
+  
+async function send() {
+  if (!msg.trim()) {
+    alert("Please enter the email message");
+    return;
   }
+
+  if (emailList.length === 0) {
+    alert("Please upload an Excel file containing email addresses");
+    return;
+  }
+
+  setstatus(true);
+
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/sendemail",
+      {
+        message: msg,
+        emailList: emailList
+      }
+    );
+
+    if (response.data === true) {
+      alert("Email Sent Successfully");
+    } else {
+      alert("Failed to send emails");
+    }
+  } catch (error) {
+    console.error("Email sending error:", error);
+
+    if (error.response) {
+      alert(`Backend Error: ${error.response.status}`);
+    } else {
+      alert(
+        "Cannot connect to backend. Check whether the backend is running."
+      );
+    }
+  } finally {
+    setstatus(false);
+  }
+}
+
 
   return (
     <div>
