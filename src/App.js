@@ -4,78 +4,76 @@ import * as XLSX from "xlsx"
 
 function App() {
 
-  const [msg,setmsg] = useState("")
-  const [status,setstatus] = useState(false)
-  const [emailList,setEmailList] = useState([])
+  const [msg, setmsg] = useState("")
+  const [status, setstatus] = useState(false)
+  const [emailList, setEmailList] = useState([])
 
-  function handlemsg(evt)
-  {
+  function handlemsg(evt) {
     setmsg(evt.target.value)
   }
 
-  function handlefile(event)
-  {
+  function handlefile(event) {
     const file = event.target.files[0]
-  console.log(file)
+    console.log(file)
 
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const data = e.target.result;
-    const workbook = XLSX.read(data, { type: 'binary' })
-    const sheetName = workbook.SheetNames[0]
-    const worksheet = workbook.Sheets[sheetName]
-    const emailList = XLSX.utils.sheet_to_json(worksheet,{header:'A'})
-    const totalemail = emailList.map(function(item){return item.A})
-    console.log(totalemail)
-    setEmailList(totalemail)
-    
-  }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const data = e.target.result;
+      const workbook = XLSX.read(data, { type: 'binary' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      const emailList = XLSX.utils.sheet_to_json(worksheet, { header: 'A' })
+      const totalemail = emailList.map(function (item) { return item.A })
+      console.log(totalemail)
+      setEmailList(totalemail)
 
-  reader.readAsBinaryString(file);
-  }
-
-  
-async function send() {
-  if (!msg.trim()) {
-    alert("Please enter the email message");
-    return;
-  }
-
-  if (emailList.length === 0) {
-    alert("Please upload an Excel file containing email addresses");
-    return;
-  }
-
-  setstatus(true);
-
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/sendemail",
-      {
-        message: msg,
-        emailList: emailList
-      }
-    );
-
-    if (response.data === true) {
-      alert("Email Sent Successfully");
-    } else {
-      alert("Failed to send emails");
     }
-  } catch (error) {
-    console.error("Email sending error:", error);
 
-    if (error.response) {
-      alert(`Backend Error: ${error.response.status}`);
-    } else {
-      alert(
-        "Cannot connect to backend. Check whether the backend is running."
+    reader.readAsBinaryString(file);
+  }
+
+
+  async function send() {
+    if (!msg.trim()) {
+      alert("Please enter the email message");
+      return;
+    }
+
+    if (emailList.length === 0) {
+      alert("Please upload an Excel file containing email addresses");
+      return;
+    }
+
+    setstatus(true);
+
+    try {
+      const response = await axios.post(
+        "https://bulkmail-backend-mgsk.onrender.com/sendemail",
+        {
+          message: msg,
+          emailList: emailList
+        }
       );
+
+      if (response.data === true) {
+        alert("Email Sent Successfully");
+      } else {
+        alert("Failed to send emails");
+      }
+    } catch (error) {
+      console.error("Email sending error:", error);
+
+      if (error.response) {
+        alert(`Backend Error: ${error.response.status}`);
+      } else {
+        alert(
+          "Cannot connect to backend. Check whether the backend is running."
+        );
+      }
+    } finally {
+      setstatus(false);
     }
-  } finally {
-    setstatus(false);
   }
-}
 
 
   return (
@@ -96,15 +94,15 @@ async function send() {
         <textarea onChange={handlemsg} value={msg} className="w-[80%] h-32 py-2 outline-none px-2 border border-black rounded-md" placeholder="Enter the email text ...."></textarea>
 
         <div>
-          <input type="file" onChange={handlefile}  className="border-4 border-dashed py-4 px-4 mt-5 mb-5" />
+          <input type="file" onChange={handlefile} className="border-4 border-dashed py-4 px-4 mt-5 mb-5" />
         </div>
 
         <p>Total Emails in the file: {emailList.length}</p>
 
 
 
-        <button  onClick={send} className="mt-2 bg-blue-950 py-2 px-2 text-white font-medium rounded-md w-fit">{status?"Sending...":"Send"}</button>
- 
+        <button onClick={send} className="mt-2 bg-blue-950 py-2 px-2 text-white font-medium rounded-md w-fit">{status ? "Sending..." : "Send"}</button>
+
 
 
 
